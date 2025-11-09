@@ -165,51 +165,50 @@ export default function StepDetailsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.contentWrapper}>
-        {/* Header */}
-        <ThemedView
-          style={[
-            styles.header,
-            {
-              backgroundColor: isDark
-                ? RoadmapColors.dark.stepBackground
-                : RoadmapColors.light.stepBackground,
-              borderBottomColor: isDark
-                ? RoadmapColors.dark.stepBorder
-                : RoadmapColors.light.stepBorder,
-            },
-          ]}
+      {/* Header */}
+      <ThemedView
+        style={[
+          styles.header,
+          {
+            backgroundColor: isDark
+              ? RoadmapColors.dark.stepBackground
+              : RoadmapColors.light.stepBackground,
+            borderBottomColor: isDark
+              ? RoadmapColors.dark.stepBorder
+              : RoadmapColors.light.stepBorder,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.backButtonHeader}
+          onPress={handleBack}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <TouchableOpacity
-            style={styles.backButtonHeader}
-            onPress={handleBack}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={isDark ? Colors.dark.text : Colors.light.text}
-            />
-          </TouchableOpacity>
-          <View style={styles.headerContent}>
-            <StepTypeIcon stepType={step.step_type} size={32} />
-            <View style={styles.headerText}>
-              <ThemedText type="title" style={styles.headerTitle} numberOfLines={2}>
-                {step.title}
-              </ThemedText>
-              <StepStatusIndicator step={step} size="small" showLabel />
-            </View>
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={isDark ? Colors.dark.text : Colors.light.text}
+          />
+        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <StepTypeIcon stepType={step.step_type} size={32} />
+          <View style={styles.headerText}>
+            <ThemedText type="title" style={styles.headerTitle} numberOfLines={2}>
+              {step.title}
+            </ThemedText>
+            <StepStatusIndicator step={step} size="small" showLabel />
           </View>
-        </ThemedView>
+        </View>
+      </ThemedView>
 
-        {/* Content */}
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+      {/* Content */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Description */}
         {step.description && (
           <InfoCard>
@@ -430,7 +429,6 @@ export default function StepDetailsScreen() {
           )}
         </View>
       </ScrollView>
-      </View>
     </SafeAreaView>
   );
 }
@@ -438,10 +436,6 @@ export default function StepDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  contentWrapper: {
-    flex: 1,
-    flexDirection: 'column',
   },
   loadingContainer: {
     flex: 1,

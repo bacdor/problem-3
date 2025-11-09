@@ -45,6 +45,7 @@ export default function ChatScreen() {
     new Set()
   );
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [welcomeMessageGenerated, setWelcomeMessageGenerated] = useState(false);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -54,6 +55,11 @@ export default function ChatScreen() {
       setSelectedRoadmapId(activeRoadmap.id);
     }
   }, [activeRoadmap, selectedRoadmapId]);
+
+  // Reset welcome message flag when roadmap changes
+  useEffect(() => {
+    setWelcomeMessageGenerated(false);
+  }, [selectedRoadmapId]);
 
   // Load alerts
   useEffect(() => {
@@ -74,17 +80,32 @@ export default function ChatScreen() {
 
   // Generate welcome message on first load or when roadmap changes
   useEffect(() => {
-    if (!user || messages.length > 0 || loading) return;
+    if (!user || loading) return;
 
-    const showWelcome = async () => {
-      const result = await generateWelcomeMessage(user.id, selectedRoadmapId);
-      if (result.error) {
-        console.error('Failed to generate welcome message:', result.error);
+    // Check if there's already an assistant message
+    const hasAssistantMessage = messages.some((msg) => msg.role === 'assistant');
+    if (hasAssistantMessage) {
+      if (!welcomeMessageGenerated) {
+        setWelcomeMessageGenerated(true);
       }
-    };
+      return;
+    }
 
-    showWelcome();
-  }, [user, messages.length, loading, selectedRoadmapId]);
+    // Only generate if no messages exist and we haven't generated one yet
+    if (messages.length === 0 && !welcomeMessageGenerated) {
+      const showWelcome = async () => {
+        setWelcomeMessageGenerated(true);
+        const result = await generateWelcomeMessage(user.id, selectedRoadmapId);
+        if (result.error) {
+          console.error('Failed to generate welcome message:', result.error);
+          // Reset flag on error so it can retry
+          setWelcomeMessageGenerated(false);
+        }
+      };
+
+      showWelcome();
+    }
+  }, [user, messages, loading, selectedRoadmapId, welcomeMessageGenerated]);
 
   const handleSendMessage = useCallback(
     async (content: string) => {
@@ -129,18 +150,13 @@ export default function ChatScreen() {
           onPress: async () => {
             await clearHistory();
             setShowSuggestions(true);
-            // Regenerate welcome message after clearing
-            if (user) {
-              const result = await generateWelcomeMessage(user.id, selectedRoadmapId);
-              if (result.error) {
-                console.error('Failed to generate welcome message:', result.error);
-              }
-            }
+            setWelcomeMessageGenerated(false);
+            // Welcome message will be regenerated automatically by the useEffect
           },
         },
       ]
     );
-  }, [clearHistory, user, selectedRoadmapId]);
+  }, [clearHistory]);
 
   const handleRoadmapSelect = useCallback((roadmapId: string | null) => {
     setSelectedRoadmapId(roadmapId);
@@ -226,8 +242,10 @@ export default function ChatScreen() {
           </View>
         )}
 
-        {/* Quick Suggestions */}
-        {showSuggestions && messages.length === 0 && (
+        {/* Quick Suggestions - Show when there's only one assistant message (welcome) */}
+        {showSuggestions && 
+         messages.length === 1 && 
+         messages[0]?.role === 'assistant' && (
           <QuickSuggestions
             suggestions={[
               { id: 'next-step', text: "What's my next step?" },

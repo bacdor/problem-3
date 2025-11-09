@@ -283,14 +283,20 @@ export async function generateWelcomeMessage(
   }
 
   try {
-    // Check if there's already a welcome message or any messages for this roadmap
-    const historyResult = await chatService.getChatHistory(patientId, roadmapId, 1);
+    // Check if there's already a welcome message (assistant message) for this roadmap
+    const historyResult = await chatService.getChatHistory(patientId, roadmapId);
     if (!historyResult.error && historyResult.messages.length > 0) {
-      // Already has messages, don't generate a welcome message
-      return {
-        message: null,
-        error: null,
-      };
+      // Check if there's already an assistant message (welcome message)
+      const hasAssistantMessage = historyResult.messages.some(
+        (msg) => msg.role === 'assistant'
+      );
+      if (hasAssistantMessage) {
+        // Already has a welcome message, don't generate another one
+        return {
+          message: null,
+          error: null,
+        };
+      }
     }
 
     // Build patient context for personalized welcome
