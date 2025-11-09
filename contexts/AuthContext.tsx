@@ -2,12 +2,18 @@
  * Authentication Context for managing auth state across the app
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import * as authHelpers from '@/lib/auth';
-import type { AuthState, AuthUser, SignInData, SignUpData } from '@/types/auth';
-import type { Profile } from '@/types/database';
-import type { Session } from '@supabase/supabase-js';
+import * as authHelpers from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+import type { AuthState, AuthUser, SignInData, SignUpData } from "@/types/auth";
+import type { Profile } from "@/types/database";
+import type { Session } from "@supabase/supabase-js";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface AuthContextType extends AuthState {
   signIn: (data: SignInData) => Promise<{ error: any }>;
@@ -112,8 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
-
