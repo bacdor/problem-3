@@ -45,6 +45,15 @@ export interface CareStep {
   prep_instructions: string | null;
   provider_name: string | null;
   provider_phone: string | null;
+  provider_specialty: string | null;
+  location_name: string | null;
+  location_address: string | null;
+  location_phone: string | null;
+  clinic_approved: boolean | null;
+  previous_data_received: boolean | null;
+  appointment_confirmation_code: string | null;
+  estimated_duration: number | null;
+  notes: string | null;
   order: number;
   created_at: string;
   updated_at: string;

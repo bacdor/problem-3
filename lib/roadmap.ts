@@ -126,6 +126,36 @@ export async function getCareSteps(roadmapId: string): Promise<{
 }
 
 /**
+ * Get a single care step by ID
+ */
+export async function getCareStep(stepId: string): Promise<{
+  step: CareStep | null;
+  error: RoadmapError | null;
+}> {
+  try {
+    const { data, error } = await supabase
+      .from('care_steps')
+      .select('*')
+      .eq('id', stepId)
+      .single();
+
+    if (error) {
+      return {
+        step: null,
+        error: { message: error.message, code: error.code },
+      };
+    }
+
+    return { step: data as CareStep, error: null };
+  } catch (error: any) {
+    return {
+      step: null,
+      error: { message: error.message || 'Failed to fetch step' },
+    };
+  }
+}
+
+/**
  * Update step status
  */
 export async function updateStepStatus(

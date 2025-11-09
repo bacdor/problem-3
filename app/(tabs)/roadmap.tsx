@@ -5,12 +5,12 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { RoadmapTimeline } from '@/components/roadmap/RoadmapTimeline';
 import { RoadmapHeader } from '@/components/roadmap/RoadmapHeader';
-import { StepDetailModal } from '@/components/roadmap/StepDetailModal';
 import { RoadmapLoadingSkeleton } from '@/components/roadmap/RoadmapLoadingSkeleton';
 import { useRoadmaps, useRoadmapWithSteps } from '@/hooks/useRoadmap';
 import { useCareSteps } from '@/hooks/useCareSteps';
@@ -18,10 +18,9 @@ import { Spacing } from '@/constants/theme';
 import type { CareStep, CareRoadmap } from '@/types/database';
 
 export default function RoadmapScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const [selectedRoadmapId, setSelectedRoadmapId] = useState<string | null>(null);
-  const [selectedStep, setSelectedStep] = useState<CareStep | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch all roadmaps
@@ -58,9 +57,8 @@ export default function RoadmapScreen() {
   }, [refetchRoadmaps, refetchRoadmap, refetchSteps]);
 
   const handleStepPress = useCallback((step: CareStep) => {
-    setSelectedStep(step);
-    setModalVisible(true);
-  }, []);
+    router.push(`/(tabs)/step-details/${step.id}`);
+  }, [router]);
 
   // Debounce refresh to prevent rapid successive calls
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -77,19 +75,12 @@ export default function RoadmapScreen() {
     async (step: CareStep) => {
       try {
         await markComplete(step.id);
-        setModalVisible(false);
-        setSelectedStep(null);
       } catch (error) {
         Alert.alert('Error', 'Failed to mark step as complete. Please try again.');
       }
     },
     [markComplete]
   );
-
-  const handleCloseModal = useCallback(() => {
-    setModalVisible(false);
-    setSelectedStep(null);
-  }, []);
 
   const loading = roadmapsLoading || roadmapLoading || stepsLoading;
   const error = roadmapsError || roadmapError || stepsError;
@@ -200,13 +191,6 @@ export default function RoadmapScreen() {
             </>
           )}
         </ThemedView>
-
-        <StepDetailModal
-          step={selectedStep}
-          visible={modalVisible}
-          onClose={handleCloseModal}
-          onMarkComplete={handleStepMarkComplete}
-        />
       </SafeAreaView>
     );
   }
@@ -230,13 +214,6 @@ export default function RoadmapScreen() {
           onStepMarkComplete={handleStepMarkComplete}
         />
       </ThemedView>
-
-      <StepDetailModal
-        step={selectedStep}
-        visible={modalVisible}
-        onClose={handleCloseModal}
-        onMarkComplete={handleStepMarkComplete}
-      />
     </SafeAreaView>
   );
 }
