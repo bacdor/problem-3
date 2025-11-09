@@ -14,5 +14,6 @@ const getEnvVar = (key: string): string => {
 export const env = {
   supabaseUrl: getEnvVar('EXPO_PUBLIC_SUPABASE_URL'),
   supabaseAnonKey: getEnvVar('EXPO_PUBLIC_SUPABASE_ANON_KEY'),
+  openaiApiKey: getEnvVar('EXPO_PUBLIC_OPENAI_API_KEY'),
 } as const;
 
