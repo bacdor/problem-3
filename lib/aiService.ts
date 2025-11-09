@@ -268,4 +268,88 @@ function humanizeStatus(status: ReturnType<typeof getEffectiveStatus>): string {
   }
 }
 
+/**
+ * Generate a personalized welcome message for a patient
+ */
+export async function generateWelcomeMessage(
+  patientId: string,
+  roadmapId?: string | null
+): Promise<AIResponseResult> {
+  if (!patientId) {
+    return {
+      message: null,
+      error: { message: 'Missing patient information for welcome message.' },
+    };
+  }
+
+  try {
+    // Check if there's already a welcome message or any messages for this roadmap
+    const historyResult = await chatService.getChatHistory(patientId, roadmapId, 1);
+    if (!historyResult.error && historyResult.messages.length > 0) {
+      // Already has messages, don't generate a welcome message
+      return {
+        message: null,
+        error: null,
+      };
+    }
+
+    // Build patient context for personalized welcome
+    const contextSummary = await buildPatientContext(patientId, roadmapId);
+
+    const welcomePrompt = contextSummary
+      ? `Generate a friendly, personalized welcome message for this patient based on their care roadmap. Keep it concise (2-3 sentences) and encouraging. Patient context: ${contextSummary}`
+      : 'Generate a friendly, welcoming message for a new patient. Keep it concise (2-3 sentences) and encouraging them to ask questions about their care.';
+
+    const systemMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
+      role: 'system',
+      content: SYSTEM_PROMPT,
+    };
+
+    const userMessage: OpenAI.Chat.Completions.ChatCompletionMessageParam = {
+      role: 'user',
+      content: welcomePrompt,
+    };
+
+    const completionResult = await createChatCompletion([
+      systemMessage,
+      userMessage,
+    ]);
+
+    if (completionResult.error || !completionResult.content) {
+      return {
+        message: null,
+        error: completionResult.error ?? {
+          message: 'Failed to generate welcome message. Please try again.',
+        },
+      };
+    }
+
+    const saveResult = await chatService.saveMessage(
+      patientId,
+      'assistant',
+      completionResult.content,
+      roadmapId || null,
+      null
+    );
+
+    if (saveResult.error) {
+      return {
+        message: null,
+        error: saveResult.error,
+      };
+    }
+
+    return {
+      message: saveResult.message,
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      message: null,
+      error: {
+        message: error?.message || 'Unexpected error generating welcome message.',
+      },
+    };
+  }
+}
 

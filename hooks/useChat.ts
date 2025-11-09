@@ -15,7 +15,7 @@ export interface UseChatResult {
   sending: boolean;
   error: chatService.ChatError | null;
   sendMessage: (content: string, roadmapId?: string | null) => Promise<void>;
-  clearHistory: () => Promise<void>;
+  clearHistory: (roadmapId?: string | null) => Promise<void>;
 }
 
 export function useChat(roadmapId?: string | null): UseChatResult {
@@ -101,16 +101,21 @@ export function useChat(roadmapId?: string | null): UseChatResult {
     [user, roadmapId, sending]
   );
 
-  const clearHistory = useCallback(async () => {
-    if (!user) return;
+  const clearHistory = useCallback(
+    async (clearRoadmapId?: string | null) => {
+      if (!user) return;
 
-    const result = await chatService.clearChatHistory(user.id);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setMessages([]);
-    }
-  }, [user]);
+      // If no roadmapId specified, use the current roadmapId from hook
+      const targetRoadmapId = clearRoadmapId !== undefined ? clearRoadmapId : roadmapId;
+      const result = await chatService.clearChatHistory(user.id, targetRoadmapId);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setMessages([]);
+      }
+    },
+    [user, roadmapId]
+  );
 
   // Load messages on mount
   useEffect(() => {

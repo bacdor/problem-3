@@ -1,4 +1,5 @@
 import { StyleSheet, View, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -22,8 +23,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ThemedView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title" style={styles.title}>
             Profile
@@ -65,8 +67,9 @@ export default function ProfileScreen() {
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
           <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
         </TouchableOpacity>
-      </ScrollView>
-    </ThemedView>
+        </ScrollView>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 

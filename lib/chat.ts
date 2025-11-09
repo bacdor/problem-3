@@ -161,14 +161,23 @@ export async function deleteMessage(messageId: string): Promise<{
 /**
  * Clear all chat messages for a patient
  */
-export async function clearChatHistory(patientId: string): Promise<{
+export async function clearChatHistory(
+  patientId: string,
+  roadmapId?: string | null
+): Promise<{
   error: ChatError | null;
 }> {
   try {
-    const { error } = await supabase
+    let query = supabase
       .from('chat_messages')
       .delete()
       .eq('patient_id', patientId);
+
+    if (roadmapId) {
+      query = query.eq('roadmap_id', roadmapId);
+    }
+
+    const { error } = await query;
 
     if (error) {
       return {
